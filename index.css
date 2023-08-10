@@ -1,0 +1,53 @@
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    font-size: 62.5%;
+}
+
+html, body {
+    height: 100vh;
+    width: 100vw;
+}
+
+.continer { 
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    flex-direction: column;
+    height: auto;
+    min-height: 100%;
+}
+
+#matrix {
+    position: absolute;
+    background: black;
+    width: 250px;
+    padding: 2px;
+    height: 500px;
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    grid-template-rows: repeat(20, 1fr);
+}
+
+#x {
+    position: relative;
+    width: 258px;
+    height: 516px;
+}
+
+#canvas {
+    position: absolute;
+}
+
+span {
+    width: 23px;
+    height: 23px;
+    border: 1px solid gray;
+}
+
