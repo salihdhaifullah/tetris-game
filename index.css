@@ -28,7 +28,6 @@ html, body {
     position: absolute;
     background: black;
     width: 250px;
-    padding: 2px;
     height: 500px;
     display: grid;
     grid-template-columns: repeat(10, 1fr);
@@ -46,8 +45,8 @@ html, body {
 }
 
 span {
-    width: 23px;
-    height: 23px;
+    width: 24px;
+    height: 24px;
     border: 1px solid gray;
 }
 
