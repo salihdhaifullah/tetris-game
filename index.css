@@ -1,4 +1,3 @@
-
 * {
     margin: 0;
     padding: 0;
@@ -24,17 +23,25 @@ html, body {
     min-height: 100%;
 }
 
-#matrix {
-    background: black;
-    width: 250px;
-    height: 500px;
+.matrix {
     display: grid;
     grid-template-columns: repeat(10, 1fr);
     grid-template-rows: repeat(20, 1fr);
+}
+
+.game {
+    background: black;
+    width: 250px;
+    height: 500px;
+}
+
+.text_game {
+    display: flex;
+    align-items: center;
+    justify-content: center; 
 }
 
 span {
     width: 25px;
     height: 25px;
 }
-
