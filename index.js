@@ -1,4 +1,5 @@
 const continer = document.getElementById("matrix");
+const scoreEle = document.getElementById("score");
 const mw = continer.clientWidth;
 const mh = continer.clientHeight;
 const space = mw / 10;
@@ -10,9 +11,7 @@ continer.classList.add("text_game");
 
 let score = 0;
 let level = 1;
-const scoreEle = document.getElementById("score");
 
-// TODO: add the new pice position hilghting
 // TODO: add the next four pices in page
 // TODO: hilghting the pices that they will be remove
 // TODO: implement hard drop hold util resh the end
@@ -20,18 +19,6 @@ const scoreEle = document.getElementById("score");
 // FIX: clean up
 // PERF: optimization
 // PERF: use canvse
-
-function randomInt(min, max) {
-    min = Math.ceil(min);
-    max = Math.floor(max);
-    return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-
-function calcPoints(rows) {
-    const points = (base_points[rows - 1]) * (level + rows)
-    score += points;
-    scoreEle.innerText = score;
-}
 
 const pice1 = [
     [
@@ -142,6 +129,18 @@ const pice7 = [
 const pises = [pice1, pice2, pice3, pice4, pice5, pice6, pice7];
 const stopedPices = [];
 
+function randomInt(min, max) {
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function calcPoints(rows) {
+    const points = (base_points[rows - 1]) * (level + rows)
+    score += points;
+    scoreEle.innerText = score;
+}
+
 function initMatrix() {
     continer.classList.add("matrix");
     continer.classList.remove("text_game")
@@ -179,6 +178,7 @@ function redrawPice(x, y, w, h, pice, img) {
                 const position = `${i + y - h}-${j + x - w}`;
                 const ele = document.getElementById(position);
                 ele.style.backgroundImage = `url("${img}")`
+                ele.style.opacity = "1"
             }
         }
     }
@@ -203,6 +203,46 @@ function canRotate(x, y, w, h, pice) {
     return canGoTo(newX, newY, w, h, pice);
 }
 
+let prevHilghtPosition = null;
+
+function clearPrevHilght() {
+
+    if (prevHilghtPosition !== null) {
+        for (let i = 0; i < prevHilghtPosition.pice.length; i++) {
+            for (let j = 0; j < prevHilghtPosition.pice[i].length; j++) {
+                if (prevHilghtPosition.pice[i][j]) {
+                    const position = `${i + prevHilghtPosition.y - prevHilghtPosition.h}-${j + prevHilghtPosition.x - prevHilghtPosition.w}`;
+                    const ele = document.getElementById(position);
+                    ele.style.backgroundImage = "none";
+                    ele.style.opacity = "1";
+                }
+            }
+        }
+    }
+}
+
+
+function hilghtNewPosition(x, y, w, h, pice, img) {
+    clearPrevHilght();
+    let newY = y;
+
+    while (newY < 20 && canGoTo(x, newY + 1, w, h, pice)) {
+        newY++;
+    }
+
+    for (let i = 0; i < pice.length; i++) {
+        for (let j = 0; j < pice[i].length; j++) {
+            if (pice[i][j]) {
+                const position = `${i + newY - h}-${j + x - w}`;
+                const ele = document.getElementById(position);
+                ele.style.backgroundImage = `url("${img}")`
+                ele.style.opacity = "0.5";
+            }
+        }
+    }
+
+    prevHilghtPosition = { y: newY, x, w, h, pice };
+}
 
 function removeLine(line) {
     for (let i = 0; i < 10; i++) {
@@ -266,6 +306,7 @@ function stop(x, y, w, h, pice) {
         }
     }
 
+    prevHilghtPosition = null;
     checkLine();
 }
 
@@ -284,17 +325,20 @@ function drawPiece() {
         return;
     }
 
+    hilghtNewPosition(x, y, w, h, piece, img);
     redrawPice(x, y, w, h, piece, img);
 
     const callback = (e) => {
         if (e.key === "ArrowLeft" && x > w && canGoTo(x - 1, y, w, h, piece)) {
             clearPrevPice(x, y, w, h, piece)
             x--;
+            hilghtNewPosition(x, y, w, h, piece, img);
             redrawPice(x, y, w, h, piece, img);
         };
         if (e.key === "ArrowRight" && x < 10 && canGoTo(x + 1, y, w, h, piece)) {
             clearPrevPice(x, y, w, h, piece);
             x++;
+            hilghtNewPosition(x, y, w, h, piece, img);
             redrawPice(x, y, w, h, piece, img);
         };
         if (e.key === "ArrowUp") {
@@ -308,6 +352,7 @@ function drawPiece() {
                 [w, h] = [h, w];
                 y += h - w
                 x += w - h
+                hilghtNewPosition(x, y, w, h, rotatedPiece, img);
                 redrawPice(x, y, w, h, rotatedPiece, img);
                 piece = rotatedPiece;
                 currentRotateing = newRotateing;
