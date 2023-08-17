@@ -13,14 +13,55 @@ html, body {
     width: 100vw;
 }
 
-.continer { 
+.continer {
+    gap: 20px;
     display: flex;
     justify-content: center;
     align-items: center;
     width: 100%;
-    flex-direction: column;
+    flex-direction: row;
     height: auto;
     min-height: 100%;
+}
+
+.side {
+    gap: 20px;
+    justify-content: space-between;
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+    height: 500px;
+}
+
+.score {
+    background: #e2e8f0;
+    padding: 2px;
+    border-radius: 4px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    border: 1px solid #1f2937;
+}
+
+.score p {
+    padding: 4px;
+    font-size: 20px;
+    border: 1px solid #1f2937;
+    text-align: center;
+    border-radius: 4px;
+    width: 100%;
+    background: white;
+}
+
+.score span {
+    padding: 4px;
+    border: 1px solid #1f2937;
+    font-size: 25px;
+    width: 100%;
+    text-align: center;
+    height: 200%;
+    border-radius: 4px;
+    background: white;
 }
 
 .matrix {
@@ -39,6 +80,44 @@ html, body {
     display: flex;
     align-items: center;
     justify-content: center; 
+}
+
+.buttons {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.buttons .row_2 {
+    display: flex;
+    flex-direction: row;
+    gap: 4px;
+}
+
+.start_game {
+    background-color: #059669;
+    color: #e2e8f0;
+    text-align: center;
+    border: 1px solid #1f2937;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+}
+
+.buttons button {
+    background-color: #059669;
+    text-align: center;
+    border: 1px solid #1f2937;
+    font-size: 20px;
+    cursor: pointer;
+    width: 60px;
+    height: 30px;
+    padding: 4px;
+    fill: #e2e8f0;
+    border-radius: 4px;
 }
 
 span {

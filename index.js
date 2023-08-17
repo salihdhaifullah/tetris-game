@@ -2,14 +2,35 @@ const continer = document.getElementById("matrix");
 const mw = continer.clientWidth;
 const mh = continer.clientHeight;
 const space = mw / 10;
-const start_game_button = () => '<button class="start_game"onclick="startGame()">start game</button>';
+const start_game_button = '<button class="start_game" onclick="startGame()">start game</button>';
+
+const base_points = [100, 300, 500, 800];
 continer.innerHTML = start_game_button;
-continer.classList.add("text_game")
+continer.classList.add("text_game");
+
+let score = 0;
+let level = 1;
+const scoreEle = document.getElementById("score");
+
+// TODO: add the new pice position hilghting
+// TODO: add the next four pices in page
+// TODO: hilghting the pices that they will be remove
+// TODO: implement hard drop hold util resh the end
+// TODO: add levels and decrees time of going down when level is incrressed
+// FIX: clean up
+// PERF: optimization
+// PERF: use canvse
 
 function randomInt(min, max) {
     min = Math.ceil(min);
     max = Math.floor(max);
     return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function calcPoints(rows) {
+    const points = (base_points[rows - 1]) * (level + rows)
+    score += points;
+    scoreEle.innerText = score;
 }
 
 const pice1 = [
@@ -54,6 +75,27 @@ const pice3 = [
 
 const pice4 = [
     [
+        [false, true],
+        [false, true],
+        [true, true]
+    ],
+    [
+        [true, false, false],
+        [true, true, true]
+    ],
+    [
+        [true, true],
+        [true, false],
+        [true, false]
+    ],
+    [
+        [true, true, true],
+        [false, false, true]
+    ]
+];
+
+const pice5 = [
+    [
         [true, false],
         [true, true],
         [true, false]
@@ -73,7 +115,7 @@ const pice4 = [
     ]
 ];
 
-const pice5 = [
+const pice6 = [
     [
         [true, false],
         [true, true],
@@ -85,7 +127,7 @@ const pice5 = [
     ],
 ];
 
-const pice6 = [
+const pice7 = [
     [
         [false, true],
         [true, true],
@@ -97,7 +139,7 @@ const pice6 = [
     ],
 ];
 
-const pises = [pice1, pice2, pice3, pice4, pice5, pice6];
+const pises = [pice1, pice2, pice3, pice4, pice5, pice6, pice7];
 const stopedPices = [];
 
 function initMatrix() {
@@ -201,6 +243,7 @@ function checkLine() {
         }
     }
 
+    if (linesCount > 0) calcPoints(linesCount);
     if (lastLine > -1) reArrangeLines(lastLine, linesCount);
 }
 
@@ -297,4 +340,29 @@ function drawPiece() {
 function startGame() {
     initMatrix();
     drawPiece();
+}
+
+
+function arrow(dir) {
+    let type = "";
+
+    switch (dir) {
+        case 1:
+            type = "ArrowLeft"
+            break;
+        case 2:
+            type = "ArrowRight"
+            break;
+        case 3:
+            type = "ArrowUp"
+            break;
+        case 4:
+            type = "ArrowDown"
+            break;
+        default:
+            break;
+    }
+
+    const event = new KeyboardEvent("keydown", { "key": type });
+    window.dispatchEvent(event);
 }
