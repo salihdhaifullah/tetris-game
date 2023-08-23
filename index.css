@@ -33,6 +33,27 @@ html, body {
     height: 500px;
 }
 
+.pieces { 
+    background: #e2e8f0;
+    padding: 8px;
+    border-radius: 4px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    border: 1px solid #1f2937;
+}
+
+.pieces div { 
+    background: #e2e8f0;
+    padding: 4px;
+    border-radius: 4px;
+    
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    border: 1px solid #1f2937;
+}
+
 .score {
     background: #e2e8f0;
     padding: 2px;

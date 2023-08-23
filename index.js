@@ -11,6 +11,7 @@ continer.classList.add("text_game");
 
 let score = 0;
 let level = 1;
+const stack = [];
 
 // TODO: add the next four pices in page
 // TODO: hilghting the pices that they will be remove
@@ -384,6 +385,7 @@ function drawPiece() {
 
 function startGame() {
     initMatrix();
+
     drawPiece();
 }
 
