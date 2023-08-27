@@ -2,18 +2,16 @@ import { Dispatch, MutableRefObject, SetStateAction } from "react";
 import { Ihilght, Item, TetrisItem, calcPoints, initMatrix, pieces } from "./util";
 
 export default class Tetris {
-    constructor(ctx: MutableRefObject<CanvasRenderingContext2D>, currentItem: null | Item,  hilghtPosition: MutableRefObject<null | Ihilght>, space: number, stopedPices: MutableRefObject<boolean[][]>, setCurrentItem: Dispatch<SetStateAction<Item>>, setStack: Dispatch<SetStateAction<Item[]>>, setIsGame: Dispatch<SetStateAction<boolean>>, setScore: Dispatch<SetStateAction<number>>, level: number) {
+    constructor(ctx: MutableRefObject<CanvasRenderingContext2D>, hilghtPosition: MutableRefObject<null | Ihilght>, space: number, stopedPices: MutableRefObject<boolean[][]>, currentItem: Item, level: number, setStack: Dispatch<SetStateAction<Item[]>>, setIsGame: Dispatch<SetStateAction<boolean>>, setScore: Dispatch<SetStateAction<number>>) {
         this.stopedPices = stopedPices;
         this.hilghtPosition = hilghtPosition;
         this.ctx = ctx;
-        // @ts-ignore
         this.currentItem = currentItem;
         this.space = space;
-        this.setCurrentItem = setCurrentItem;
+        this.level = level;
         this.setStack = setStack;
         this.setIsGame = setIsGame;
         this.setScore = setScore;
-        this.level = level;
     }
 
     private stopedPices: MutableRefObject<boolean[][]>;
@@ -21,11 +19,10 @@ export default class Tetris {
     private ctx: MutableRefObject<CanvasRenderingContext2D>
     private space: number;
     private currentItem: Item;
-    private setCurrentItem: Dispatch<SetStateAction<Item>>;
+    private level: number;
     private setStack: Dispatch<SetStateAction<Item[]>>;
     private setIsGame: Dispatch<SetStateAction<boolean>>;
     private setScore: Dispatch<SetStateAction<number>>;
-    private level: number;
 
     private clearPrevPice() {
         for (let i = 0; i < this.currentItem.piece.length; i++) {
@@ -161,7 +158,7 @@ export default class Tetris {
         this.setIsGame(false)
     }
 
-    async startGame() {
+    public async startGame() {
         this.stopedPices.current = initMatrix();
         const temp = [];
 
@@ -169,12 +166,12 @@ export default class Tetris {
             temp.push(await new TetrisItem(this.space).get())
         }
 
-        this.setCurrentItem(await new TetrisItem(this.space).get())
-        this.setIsGame(true)
         this.setStack(temp);
+        this.drawPiece()
     }
 
-    drawPiece() {
+    private drawPiece() {
+        console.log("hwrererywejhbs ")
         if (!this.canGoTo()) {
             this.stopGame()
             return;
@@ -212,10 +209,10 @@ export default class Tetris {
                     [this.currentItem.w, this.currentItem.h] = [this.currentItem.h, this.currentItem.w];
                     this.currentItem.y += this.currentItem.h - this.currentItem.w
                     this.currentItem.x += this.currentItem.w - this.currentItem.h
-                    this.hilghtNewPosition();
-                    this.redrawPice();
                     this.currentItem.piece = rotatedPiece;
                     this.currentItem.currentRotating = newRotateing;
+                    this.hilghtNewPosition();
+                    this.redrawPice();
                 }
             }
 
@@ -239,7 +236,8 @@ export default class Tetris {
                 clearInterval(timeout)
                 const toAdd = await new TetrisItem(this.space).get();
                 this.setStack((prevStack) => {
-                    this.setCurrentItem(prevStack[0])
+                    this.currentItem = prevStack[0];
+                    this.drawPiece()
                     return [...prevStack.slice(1), toAdd]
                 });
             }
