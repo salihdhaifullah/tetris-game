@@ -1,5 +1,5 @@
 import { Dispatch, MutableRefObject, SetStateAction } from "react";
-import { Ihilght, Item, TetrisItem, calcPoints, initMatrix, pieces } from "./util";
+import { Ihilght, ImageDataToImage, Item, TetrisItem, calcPoints, initMatrix, pieces, sleep } from "./util";
 
 export default class Tetris {
     constructor(ctx: MutableRefObject<CanvasRenderingContext2D>, hilghtPosition: MutableRefObject<null | Ihilght>, space: number, stopedPices: MutableRefObject<boolean[][]>, currentItem: Item, level: number, setStack: Dispatch<SetStateAction<Item[]>>, setIsGame: Dispatch<SetStateAction<boolean>>, setScore: Dispatch<SetStateAction<number>>) {
@@ -72,7 +72,6 @@ export default class Tetris {
     private removeLine(line: number) {
         for (let i = 0; i < 10; i++) {
             this.stopedPices.current[line][i] = false;
-            this.ctx.current.clearRect(i * this.space, line * this.space, this.space, this.space)
         }
     }
 
@@ -112,7 +111,7 @@ export default class Tetris {
     }
 
 
-    private stop() {
+    private async stop() {
         for (let i = 0; i < this.currentItem.piece.length; i++) {
             for (let j = 0; j < this.currentItem.piece[i].length; j++) {
                 if (this.currentItem.piece[i][j]) {
@@ -122,10 +121,45 @@ export default class Tetris {
         }
 
         this.hilghtPosition.current = null;
-        this.checkLine();
+        await this.checkLine();
     }
 
-    private checkLine() {
+
+    private async anmateFadeIn(image: HTMLImageElement, x: number, y: number, w: number, h: number) {
+        this.ctx.current.save();
+        this.ctx.current.globalCompositeOperation = "lighter"
+        this.ctx.current.drawImage(image, x, y, w, h)
+        this.ctx.current.restore();
+    }
+
+    private async anmateFadeOut(image: HTMLImageElement, x: number, y: number, w: number, h: number) {
+        this.ctx.current.save();
+        this.ctx.current.globalAlpha = 0.5;
+        this.ctx.current.clearRect(x, y, w, h)
+        this.ctx.current.drawImage(image, x, y, w, h)
+        this.ctx.current.restore();
+    }
+
+    private async animate(firstLine: number, lines: number) {
+        const x = 0;
+        const y = firstLine * this.space;
+        const w = this.space * 10;
+        const h = lines * this.space;
+
+        const imageData = this.ctx.current.getImageData(x, y, w, h)!;
+        const image = await ImageDataToImage(imageData)
+
+        for (let i = 0; i < 3; i++) {
+            requestAnimationFrame(() => this.anmateFadeOut(image, x, y, w, h))
+            await sleep(300+i*10/ i+1)
+            requestAnimationFrame(() => this.anmateFadeIn(image, x, y, w, h))
+            await sleep(300+i*10 / i+1)
+        }
+
+        this.ctx.current.clearRect(x, y, w, h)
+    }
+
+    private async checkLine() {
         let lastLine = -1;
         let linesCount = 0;
 
@@ -135,12 +169,15 @@ export default class Tetris {
             if (j === 10) {
                 linesCount++;
                 lastLine = i;
-                this.removeLine(i);
+                this.removeLine(i)
             }
         }
 
-        if (linesCount > 0) this.setScore(prev => prev + calcPoints(linesCount, this.level));
-        if (lastLine > -1) this.reArrangeLines(lastLine, linesCount);
+        if (linesCount === 0) return;
+
+        await this.animate((lastLine + 1) - linesCount, linesCount);
+        this.setScore(prev => prev + calcPoints(linesCount, this.level));
+        this.reArrangeLines(lastLine, linesCount);
     }
 
     private canRotate(rotatedPiece: boolean[][]) {
@@ -171,7 +208,6 @@ export default class Tetris {
     }
 
     private drawPiece() {
-        console.log("hwrererywejhbs ")
         if (!this.canGoTo()) {
             this.stopGame()
             return;
@@ -227,21 +263,20 @@ export default class Tetris {
 
         const timeout = setInterval(async () => {
             if (this.currentItem.y < 20 && this.canGoTo(this.currentItem.x, this.currentItem.y + 1)) {
-                this.clearPrevPice()
+                this.clearPrevPice();
                 this.currentItem.y++;
                 this.redrawPice();
             } else {
-                this.stop()
-                window.removeEventListener("keydown", callback)
-                clearInterval(timeout)
+                window.removeEventListener("keydown", callback);
+                clearInterval(timeout);
+                await this.stop();
                 const toAdd = await new TetrisItem(this.space).get();
                 this.setStack((prevStack) => {
                     this.currentItem = prevStack[0];
-                    this.drawPiece()
-                    return [...prevStack.slice(1), toAdd]
+                    this.drawPiece();
+                    return [...prevStack.slice(1), toAdd];
                 });
             }
-        }, 1000)
-
+        }, 1000 / this.level)
     }
 }

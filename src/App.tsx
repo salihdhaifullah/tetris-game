@@ -3,12 +3,9 @@ import { Ihilght, Item, TetrisItem, arrow } from "./util";
 import Tetris from "./tetris";
 import ArrowIcon from "./ArrowIcon";
 
-// TODO: add the next four pices in page
-// TODO: hilghting the pices that they will be remove
-// TODO: implement hard drop hold util resh the end
-// TODO: add levels and decrees time of going down when level is incrressed
-// FIX: clean up
-// PERF: optimization
+// TODO: Make game Mobil friendly
+// TODO: Impalement hard drop hold util resh the end
+// TODO: Add pause game functionality 
 
 function App() {
     const [isGame, setIsGame] = useState(false);
@@ -28,8 +25,7 @@ function App() {
         ctx.current = ele.getContext("2d", { willReadFrequently: true })
         tg.current = new Tetris(ctx as MutableRefObject<CanvasRenderingContext2D>, hilghtPosition, ele.clientWidth / 10, stopedPices, await new TetrisItem(ele.clientWidth).get(), level, setStack, setIsGame, setScore)
         await tg.current.startGame()
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [])
+    }, [level])
 
     return (
         <div className="gap-5 flex justify-center items-center w-full flex-row h-auto min-h-full">

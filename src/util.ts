@@ -212,6 +212,32 @@ export interface Ihilght {
     piece: boolean[][]
 }
 
+export async function sleep(ms: number) {
+    return new Promise(resolve => {
+        setTimeout(resolve, ms);
+    });
+}
+
+export async function ImageDataToImage(imageData: ImageData): Promise<HTMLImageElement> {
+    
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+    
+    canvas.width = imageData.width;
+    canvas.height = imageData.height;
+    ctx!.putImageData(imageData, 0, 0);
+    
+    const dataURL = canvas.toDataURL();
+    const image = new Image();
+    
+    image.src = dataURL;
+
+    return await new Promise(resolve => {
+        image.onload = () => resolve(image);
+    });
+
+}
+
 export function arrow(type: "ArrowLeft" | "ArrowRight" | "ArrowUp" | "ArrowDown") {
     const event = new KeyboardEvent("keydown", { "key": type });
     window.dispatchEvent(event);
