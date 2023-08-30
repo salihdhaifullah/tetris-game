@@ -2,13 +2,21 @@ import { Dispatch, MutableRefObject, SetStateAction } from "react";
 import { Ihilght, ImageDataToImage, Item, TetrisItem, calcPoints, initMatrix, pieces, sleep } from "./util";
 
 export default class Tetris {
-    constructor(ctx: MutableRefObject<CanvasRenderingContext2D>, hilghtPosition: MutableRefObject<null | Ihilght>, space: number, stopedPices: MutableRefObject<boolean[][]>, currentItem: Item, level: number, setStack: Dispatch<SetStateAction<Item[]>>, setIsGame: Dispatch<SetStateAction<boolean>>, setScore: Dispatch<SetStateAction<number>>) {
+    constructor(ctx: MutableRefObject<CanvasRenderingContext2D>, hilghtPosition: MutableRefObject<null | Ihilght>,
+        space: number, stopedPices: MutableRefObject<boolean[][]>,
+        level: number, currentItem: Item, setLevel: Dispatch<SetStateAction<number>>,
+        setStack: Dispatch<SetStateAction<Item[]>>, setLinesCount: Dispatch<SetStateAction<number>>,
+        setIsGame: Dispatch<SetStateAction<boolean>>, setScore: Dispatch<SetStateAction<number>>) {
+
         this.stopedPices = stopedPices;
         this.hilghtPosition = hilghtPosition;
         this.ctx = ctx;
         this.currentItem = currentItem;
         this.space = space;
         this.level = level;
+        this.level = level;
+        this.setLevel = setLevel;
+        this.setLinesCount = setLinesCount;
         this.setStack = setStack;
         this.setIsGame = setIsGame;
         this.setScore = setScore;
@@ -21,8 +29,11 @@ export default class Tetris {
     private currentItem: Item;
     private level: number;
     private setStack: Dispatch<SetStateAction<Item[]>>;
+    private setLinesCount: Dispatch<SetStateAction<number>>;
     private setIsGame: Dispatch<SetStateAction<boolean>>;
     private setScore: Dispatch<SetStateAction<number>>;
+    private setLevel: Dispatch<SetStateAction<number>>;
+    private timeout: number = 0;
 
     private clearPrevPice() {
         for (let i = 0; i < this.currentItem.piece.length; i++) {
@@ -91,6 +102,7 @@ export default class Tetris {
     }
 
     private canGoTo(x: number = this.currentItem.x, y: number = this.currentItem.y, w: number = this.currentItem.w, h: number = this.currentItem.h, piece: boolean[][] = this.currentItem.piece) {
+        if (!(w <= x && x <= 10 && y <= 20)) return false;
         for (let i = 0; i < piece.length; i++) {
             for (let j = 0; j < piece[i].length; j++) {
                 if (piece[i][j] && this.stopedPices.current[i + y - h][j + x - w] === true) return false;
@@ -119,6 +131,9 @@ export default class Tetris {
                 }
             }
         }
+
+        clearInterval(this.timeout);
+        window.removeEventListener("keydown", this.boundCallback);
 
         this.hilghtPosition.current = null;
         await this.checkLine();
@@ -151,9 +166,9 @@ export default class Tetris {
 
         for (let i = 0; i < 3; i++) {
             requestAnimationFrame(() => this.anmateFadeOut(image, x, y, w, h))
-            await sleep(300+i*10/ i+1)
+            await sleep(300 + (i + 1 * 10) / i + 1)
             requestAnimationFrame(() => this.anmateFadeIn(image, x, y, w, h))
-            await sleep(300+i*10 / i+1)
+            await sleep(300 + (i + 1 * 10) / i + 1)
         }
 
         this.ctx.current.clearRect(x, y, w, h)
@@ -161,23 +176,33 @@ export default class Tetris {
 
     private async checkLine() {
         let lastLine = -1;
-        let linesCount = 0;
+        let firstLine = -1;
+        let currentLinesCount = 0;
 
         for (let i = 0; i < 20; i++) {
             let j = 0;
             while (j < 10 && this.stopedPices.current[i][j]) { j++ }
             if (j === 10) {
-                linesCount++;
+                if (firstLine === -1) firstLine = i;
+                currentLinesCount++;
                 lastLine = i;
                 this.removeLine(i)
             }
         }
 
-        if (linesCount === 0) return;
+        if (currentLinesCount === 0) return;
 
-        await this.animate((lastLine + 1) - linesCount, linesCount);
-        this.setScore(prev => prev + calcPoints(linesCount, this.level));
-        this.reArrangeLines(lastLine, linesCount);
+        await this.animate(firstLine, currentLinesCount);
+        this.setScore(prev => prev + calcPoints(currentLinesCount, this.level));
+        this.reArrangeLines(lastLine, currentLinesCount);
+        this.setLinesCount(prev => {
+            if (((prev + currentLinesCount) % 10) === 0) {
+                this.level++
+                this.setLevel(this.level);
+            }
+            return prev + currentLinesCount;
+        });
+
     }
 
     private canRotate(rotatedPiece: boolean[][]) {
@@ -207,6 +232,104 @@ export default class Tetris {
         this.drawPiece()
     }
 
+    private goLeft() {
+        if (this.canGoTo(this.currentItem.x - 1, this.currentItem.y)) {
+            this.clearPrevPice()
+            this.currentItem.x--;
+            this.hilghtNewPosition();
+            this.redrawPice();
+        }
+    }
+
+    private goRight() {
+        if (this.canGoTo(this.currentItem.x + 1, this.currentItem.y)) {
+            this.clearPrevPice();
+            this.currentItem.x++;
+            this.hilghtNewPosition();
+            this.redrawPice();
+        }
+    }
+
+    private async goDown(linesTogo: number = 2, isScore: boolean = false) {
+        if (this.canGoTo(this.currentItem.x, this.currentItem.y + linesTogo)) {
+            this.clearPrevPice()
+            this.currentItem.y = this.currentItem.y + linesTogo;
+            this.redrawPice();
+            if (isScore) this.setScore(prev => prev + linesTogo)
+        } else if (this.canGoTo(this.currentItem.x, this.currentItem.y + 1)) {
+            this.clearPrevPice()
+            this.currentItem.y = this.currentItem.y + 1;
+            this.redrawPice();
+        } else {
+            await this.stop();
+            const toAdd = await new TetrisItem(this.space).get();
+            this.setStack((prevStack) => {
+                this.currentItem = prevStack[0];
+                this.drawPiece();
+                return [...prevStack.slice(1), toAdd];
+            });
+        }
+    }
+
+    private async hardDrop() {
+        let i = 0;
+        while (this.canGoTo(this.currentItem.x, this.currentItem.y + i + 1)) { i++; }
+        if (i > 0) {
+            await this.goDown(i);
+            this.setScore(prev => prev + i * 2)
+        }
+    }
+
+    private rotate() {
+        const newRotateing = pieces[this.currentItem.item].length - 1 === this.currentItem.currentRotating
+            ? 0 : this.currentItem.currentRotating + 1;
+
+        const rotatedPiece = pieces[this.currentItem.item][newRotateing]
+
+        if (this.canRotate(rotatedPiece)) {
+            this.clearPrevPice();
+            [this.currentItem.w, this.currentItem.h] = [this.currentItem.h, this.currentItem.w];
+            this.currentItem.y += this.currentItem.h - this.currentItem.w
+            this.currentItem.x += this.currentItem.w - this.currentItem.h
+            this.currentItem.piece = rotatedPiece;
+            this.currentItem.currentRotating = newRotateing;
+            this.hilghtNewPosition();
+            this.redrawPice();
+        }
+    }
+
+
+    private async callback(e: KeyboardEvent) {
+        e.preventDefault()
+
+        switch (e.key) {
+            case "ArrowLeft":
+                this.goLeft();
+                break;
+
+            case "ArrowRight":
+                this.goRight();
+                break;
+
+            case "ArrowDown":
+                await this.goDown(2, true);
+                break;
+
+            case "ArrowUp":
+                this.rotate();
+                break;
+
+            case " ":
+                await this.hardDrop();
+                break;
+
+            default:
+                break;
+        }
+    }
+
+    private boundCallback = this.callback.bind(this);
+
     private drawPiece() {
         if (!this.canGoTo()) {
             this.stopGame()
@@ -216,67 +339,8 @@ export default class Tetris {
         this.hilghtNewPosition();
         this.redrawPice();
 
-        const callback = (e: KeyboardEvent) => {
-            e.preventDefault()
-
-            if (e.key === "ArrowLeft" && this.currentItem.x > this.currentItem.w && this.canGoTo(this.currentItem.x - 1, this.currentItem.y)) {
-                this.clearPrevPice()
-                this.currentItem.x--;
-                this.hilghtNewPosition();
-                this.redrawPice();
-            }
-
-            if (e.key === "ArrowRight" && this.currentItem.x < 10 && this.canGoTo(this.currentItem.x + 1, this.currentItem.y)) {
-                this.clearPrevPice();
-                this.currentItem.x++;
-                this.hilghtNewPosition();
-                this.redrawPice();
-            }
-
-            if (e.key === "ArrowUp") {
-                let newRotateing = this.currentItem.currentRotating;
-                if (pieces[this.currentItem.item].length - 1 === newRotateing) newRotateing = 0;
-                else newRotateing++;
-
-                const rotatedPiece = pieces[this.currentItem.item][newRotateing]
-
-                if (this.canRotate(rotatedPiece)) {
-                    this.clearPrevPice();
-                    [this.currentItem.w, this.currentItem.h] = [this.currentItem.h, this.currentItem.w];
-                    this.currentItem.y += this.currentItem.h - this.currentItem.w
-                    this.currentItem.x += this.currentItem.w - this.currentItem.h
-                    this.currentItem.piece = rotatedPiece;
-                    this.currentItem.currentRotating = newRotateing;
-                    this.hilghtNewPosition();
-                    this.redrawPice();
-                }
-            }
-
-            if (e.key === "ArrowDown" && this.currentItem.y < 20 && this.canGoTo(this.currentItem.x, this.currentItem.y + 1)) {
-                this.clearPrevPice()
-                this.currentItem.y++;
-                this.redrawPice();
-            }
-        }
-
-        window.addEventListener("keydown", callback);
-
-        const timeout = setInterval(async () => {
-            if (this.currentItem.y < 20 && this.canGoTo(this.currentItem.x, this.currentItem.y + 1)) {
-                this.clearPrevPice();
-                this.currentItem.y++;
-                this.redrawPice();
-            } else {
-                window.removeEventListener("keydown", callback);
-                clearInterval(timeout);
-                await this.stop();
-                const toAdd = await new TetrisItem(this.space).get();
-                this.setStack((prevStack) => {
-                    this.currentItem = prevStack[0];
-                    this.drawPiece();
-                    return [...prevStack.slice(1), toAdd];
-                });
-            }
-        }, 1000 / this.level)
+        window.addEventListener("keydown", this.boundCallback);
+        this.timeout = setInterval(async () => await this.goDown(1), 1000 / this.level);
     }
+
 }

@@ -238,7 +238,7 @@ export async function ImageDataToImage(imageData: ImageData): Promise<HTMLImageE
 
 }
 
-export function arrow(type: "ArrowLeft" | "ArrowRight" | "ArrowUp" | "ArrowDown") {
+export function arrow(type: "ArrowLeft" | "ArrowRight" | "ArrowUp" | "ArrowDown" | " ") {
     const event = new KeyboardEvent("keydown", { "key": type });
     window.dispatchEvent(event);
 }
