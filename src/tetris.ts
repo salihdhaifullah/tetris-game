@@ -79,25 +79,40 @@ export default class Tetris {
         this.hilghtPosition.current = { y: newY, x: this.currentItem.x, w: this.currentItem.w, h: this.currentItem.h, piece: this.currentItem.piece };
     }
 
+    private isEmpty(line: number) {
+        let isEmpty = true;
 
-    private removeLine(line: number) {
         for (let i = 0; i < 10; i++) {
-            this.stopedPices.current[line][i] = false;
+            if (this.stopedPices.current[line][i]) return isEmpty = false;
         }
+
+        return isEmpty;
     }
 
-    private reArrangeLines(line: number, linesCount: number) {
-        let i = line;
-        while (i > (linesCount - 1)) {
-            for (let j = 0; j < 10; j++) {
-                if (!this.stopedPices.current[i - linesCount][j]) continue;
-                const imageData = this.ctx.current.getImageData(j * this.space, (i - linesCount) * this.space, this.space, this.space);
-                this.ctx.current.clearRect(j * this.space, (i - linesCount) * this.space, this.space, this.space)
-                this.ctx.current.putImageData(imageData!, j * this.space, i * this.space);
-                this.stopedPices.current[i - linesCount][j] = false;
-                this.stopedPices.current[i][j] = true;
-            }
-            i--;
+    private takeDown(line: number) { 
+        let newPostion = line;
+
+        for (let i = newPostion + 1; i < 20; i++) {
+            if (!this.isEmpty(i)) break;
+            newPostion++;
+        }
+
+        if (line === newPostion) return;
+
+        const imageData = this.ctx.current.getImageData(0, line * this.space, 10 * this.space, this.space);
+        this.ctx.current.clearRect(0, line * this.space, 10 * this.space, this.space)
+        this.ctx.current.putImageData(imageData!, 0, newPostion * this.space);
+
+        for (let j = 0; j < 10; j++) {
+            [this.stopedPices.current[line][j], this.stopedPices.current[newPostion][j]] = [
+                this.stopedPices.current[newPostion][j], this.stopedPices.current[line][j]];
+        }
+
+    }
+
+    private reArrangeLines() {
+        for (let i = 19; i > -1; i--) {
+               if (!this.isEmpty(i)) this.takeDown(i);
         }
     }
 
@@ -155,52 +170,60 @@ export default class Tetris {
         this.ctx.current.restore();
     }
 
-    private async animate(firstLine: number, lines: number) {
-        const x = 0;
-        const y = firstLine * this.space;
-        const w = this.space * 10;
-        const h = lines * this.space;
+    private async animate(lines: number[]) {
+        const images: HTMLImageElement[] = [];
 
-        const imageData = this.ctx.current.getImageData(x, y, w, h)!;
-        const image = await ImageDataToImage(imageData)
-
-        for (let i = 0; i < 3; i++) {
-            requestAnimationFrame(() => this.anmateFadeOut(image, x, y, w, h))
-            await sleep(300 + (i + 1 * 10) / i + 1)
-            requestAnimationFrame(() => this.anmateFadeIn(image, x, y, w, h))
-            await sleep(300 + (i + 1 * 10) / i + 1)
+        for (let i = 0; i < lines.length; i++) {
+            const imageData = this.ctx.current.getImageData(0, lines[i] * this.space, 10 * this.space, this.space)!;
+            const image = await ImageDataToImage(imageData)
+            images.push(image)
         }
 
-        this.ctx.current.clearRect(x, y, w, h)
+        for (let i = 0; i < 3; i++) {
+            for (let i = 0; i < lines.length; i++) {
+                requestAnimationFrame(() => this.anmateFadeOut(images[i], 0, lines[i] * this.space, 10 * this.space, this.space))
+            }
+
+            await sleep(300 / i + 1)
+
+            for (let i = 0; i < lines.length; i++) {
+                requestAnimationFrame(() => this.anmateFadeIn(images[i], 0, lines[i] * this.space, 10 * this.space, this.space))
+            }
+
+            await sleep(300 / i + 1)
+
+        }
+
+        for (let i = 0; i < lines.length; i++) {
+            this.ctx.current.clearRect(0, lines[i] * this.space, 10 * this.space, this.space)
+            for (let j = 0; j < 10; j++) {
+                this.stopedPices.current[lines[i]][j] = false;
+            }
+        }
     }
 
     private async checkLine() {
-        let lastLine = -1;
-        let firstLine = -1;
-        let currentLinesCount = 0;
+        const lines = [];
 
         for (let i = 0; i < 20; i++) {
             let j = 0;
             while (j < 10 && this.stopedPices.current[i][j]) { j++ }
             if (j === 10) {
-                if (firstLine === -1) firstLine = i;
-                currentLinesCount++;
-                lastLine = i;
-                this.removeLine(i)
+                lines.push(i);
             }
         }
 
-        if (currentLinesCount === 0) return;
+        if (lines.length === 0) return;
 
-        await this.animate(firstLine, currentLinesCount);
-        this.setScore(prev => prev + calcPoints(currentLinesCount, this.level));
-        this.reArrangeLines(lastLine, currentLinesCount);
+        await this.animate(lines);
+        this.setScore(prev => prev + calcPoints(lines.length, this.level));
+        this.reArrangeLines(lines);
         this.setLinesCount(prev => {
-            if (((prev + currentLinesCount) % 10) === 0) {
+            if (((prev + lines.length) % 10) === 0) {
                 this.level++
                 this.setLevel(this.level);
             }
-            return prev + currentLinesCount;
+            return prev + lines.length;
         });
 
     }
@@ -217,7 +240,11 @@ export default class Tetris {
 
     private stopGame() {
         this.stopedPices.current = initMatrix();
-        this.setIsGame(false)
+        this.setLevel(1);
+        this.setScore(0);
+        this.setStack([]);
+        this.setLinesCount(0);
+        this.setIsGame(false);
     }
 
     public async startGame() {
