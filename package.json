@@ -1,6 +1,6 @@
 {
     "name": "react-tetris",
-    "homepage": "https://salehWeb.github.io/tetris-game",
+    "homepage": "https://salehWeb.github.io/tetris-game/",
     "private": true,
     "version": "0.0.0",
     "type": "module",
