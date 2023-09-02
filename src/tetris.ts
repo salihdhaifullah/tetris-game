@@ -217,7 +217,7 @@ export default class Tetris {
 
         await this.animate(lines);
         this.setScore(prev => prev + calcPoints(lines.length, this.level));
-        this.reArrangeLines(lines);
+        this.reArrangeLines();
         this.setLinesCount(prev => {
             if (((prev + lines.length) % 10) === 0) {
                 this.level++
@@ -356,6 +356,15 @@ export default class Tetris {
     }
 
     private boundCallback = this.callback.bind(this);
+
+    puase(isPuase: boolean) {
+        if (isPuase) {
+            window.removeEventListener("keydown", this.boundCallback);
+            clearInterval(this.timeout);
+        } else { 
+            this.drawPiece()
+        }
+    }
 
     private drawPiece() {
         if (!this.canGoTo()) {
