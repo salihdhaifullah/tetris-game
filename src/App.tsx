@@ -34,13 +34,13 @@ function App() {
     }, [])
 
     useEffect(() => {
-       if (tg.current && isGame) tg.current.puase(isPause);
+        if (tg.current && isGame) tg.current.puase(isPause);
     }, [isPause, isGame])
-    
-    return (
-        <div className="sm:gap-5 gap-2 flex justify-center items-center w-screen h-screen flex-row">
 
-            <div className="flex items-center h-[500px] ml-1  my-2 justify-between flex-col">
+    return (
+        <div className="sm:gap-5 gap-2 flex justify-center items-center w-full h-screen flex-row">
+
+            <div className="flex items-center h-[500px] my-2 justify-between flex-col">
                 {!isGame ? null : (
                     <>
                         <div className="bg-zinc-100 p-0.5 rounded-md flex w-[40px] sm:w-[100px] flex-col gap-0.5 border-gray-800">
@@ -54,25 +54,25 @@ function App() {
                             <span className="sm:p-1 text-sm p-0.5 sm:text-base border-gray-800 text-center w-full rounded-md h-[200%] bg-white">{linesCount}</span>
                         </div>
 
-                        <div className="flex items-center justify-center flex-col sm:gap-1 gap-0.5">
+                        <div className="hidden sm:flex items-center justify-center flex-col gap-1">
 
                             <div className="flex-col flex justify-center items-center">
-                                <button onClick={() => arrow("ArrowUp")} className="bg-green-400 text-center border-gray-800 cursor-pointer flex justify-center items-center outline-none sm:px-4 sm:py-2 sm:text-base px-2 py-1 text-sm fill-zinc-100 rounded-md">
+                                <button onClick={() => arrow("ArrowUp")} className="bg-green-400 text-center border-gray-800 cursor-pointer flex justify-center items-center outline-none px-4 py-2 text-base fill-zinc-100 rounded-md">
                                     <ArrowIcon />
                                 </button>
                             </div>
 
                             <div className="gap-1 flex flex-row">
 
-                                <button onClick={() => arrow("ArrowLeft")} className="bg-green-400 text-center border-gray-800 cursor-pointer flex justify-center items-center outline-none sm:px-4 sm:py-2 sm:text-base px-2 py-1 text-sm fill-zinc-100 rounded-md">
+                                <button onClick={() => arrow("ArrowLeft")} className="bg-green-400 text-center border-gray-800 cursor-pointer flex justify-center items-center outline-none px-4 py-2 text-base fill-zinc-100 rounded-md">
                                     <ArrowIcon className="-rotate-90" />
                                 </button>
 
-                                <button onClick={() => arrow("ArrowDown")} className="bg-green-400 text-center border-gray-800 cursor-pointer flex justify-center items-center outline-none sm:px-4 sm:py-2 sm:text-base px-2 py-1 text-sm fill-zinc-100 rounded-md">
+                                <button onClick={() => arrow("ArrowDown")} className="bg-green-400 text-center border-gray-800 cursor-pointer flex justify-center items-center outline-none px-4 py-2 text-base fill-zinc-100 rounded-md">
                                     <ArrowIcon className="rotate-180" />
                                 </button>
 
-                                <button onClick={() => arrow("ArrowRight")} className="bg-green-400 text-center border-gray-800 cursor-pointer flex justify-center items-center outline-none sm:px-4 sm:py-2 sm:text-base px-2 py-1 text-sm fill-zinc-100 rounded-md">
+                                <button onClick={() => arrow("ArrowRight")} className="bg-green-400 text-center border-gray-800 cursor-pointer flex justify-center items-center outline-none px-4 py-2 text-base fill-zinc-100 rounded-md">
                                     <ArrowIcon className="rotate-90" />
                                 </button>
 
@@ -83,11 +83,47 @@ function App() {
                 )}
             </div>
 
-            <div className="bg-black w-[250px] h-[500px] flex justify-center items-center ">
+            <div className="flex flex-col justify-center items-center">
                 {isGame ? (
-                    <canvas ref={canvesCallback} onClick={() => arrow(" ")} width={250} height={500} className="w-full h-full"> </canvas>
+                    <>
+                        <div className="bg-black w-[250px] h-[500px] flex flex-col justify-center items-center">
+                            <canvas ref={canvesCallback} onClick={() => arrow(" ")} width={250} height={500} className="w-full h-full"> </canvas>
+                        </div>
+
+                        <div className="sm:hidden flex items-center w-full mt-2 justify-between flex-row  gap-0.5">
+                            <button onClick={() => setIsPause((prev) => !prev)} className="bg-green-400 flex text-center border-gray-800 cursor-pointer outline-none px-3 py-[9px] text-base text-zinc-100 rounded-md">
+                                {isPause ? <PlayIcon /> : <PauseIcon />}
+                            </button>
+
+                            <div className="flex items-center justify-center flex-col gap-1">
+
+                                <div className="flex-col flex justify-center items-center">
+                                    <button onClick={() => arrow("ArrowUp")} className="bg-green-400 text-center border-gray-800 cursor-pointer flex justify-center items-center outline-none px-4 py-2 text-base fill-zinc-100 rounded-md">
+                                        <ArrowIcon />
+                                    </button>
+                                </div>
+
+                                <div className="gap-1 flex flex-row">
+
+                                    <button onClick={() => arrow("ArrowLeft")} className="bg-green-400 text-center border-gray-800 cursor-pointer flex justify-center items-center outline-none px-4 py-2 text-base fill-zinc-100 rounded-md">
+                                        <ArrowIcon className="-rotate-90" />
+                                    </button>
+
+                                    <button onClick={() => arrow("ArrowDown")} className="bg-green-400 text-center border-gray-800 cursor-pointer flex justify-center items-center outline-none px-4 py-2 text-base fill-zinc-100 rounded-md">
+                                        <ArrowIcon className="rotate-180" />
+                                    </button>
+
+                                    <button onClick={() => arrow("ArrowRight")} className="bg-green-400 text-center border-gray-800 cursor-pointer flex justify-center items-center outline-none px-4 py-2 text-base fill-zinc-100 rounded-md">
+                                        <ArrowIcon className="rotate-90" />
+                                    </button>
+
+                                </div>
+
+                            </div>
+                        </div>
+                    </>
                 ) : (
-                    <div className="flex flex-col justify-center">
+                    <div className="bg-black w-[250px] h-[500px] flex flex-col justify-center items-center">
                         <button className="bg-green-400 text-center border-gray-800 cursor-pointer p-0.5 text-zinc-100 rounded-md text-base" onClick={() => setIsGame(true)}>
                             start game
                         </button>
@@ -113,13 +149,12 @@ function App() {
                             ))}
                         </div>
 
-                        <button onClick={() => setIsPause((prev) => !prev)} className="bg-green-400 text-center border-gray-800 cursor-pointer outline-none sm:px-4 sm:py-3 sm:text-lg  px-3 py-[9px] text-base text-zinc-100 rounded-md">
+                        <button onClick={() => setIsPause((prev) => !prev)} className="bg-green-400 hidden sm:flex text-center border-gray-800 cursor-pointer outline-none px-4 py-3 text-lg text-zinc-100 rounded-md">
                             {isPause ? <PlayIcon /> : <PauseIcon />}
                         </button>
                     </>
                 )}
             </div>
-
 
         </div>
     )
