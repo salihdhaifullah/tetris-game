@@ -90,7 +90,7 @@ function App() {
                             <canvas ref={canvesCallback} onClick={() => arrow(" ")} width={250} height={500} className="w-full h-full"> </canvas>
                         </div>
 
-                        <div className="sm:hidden flex items-center w-full mt-2 justify-between flex-row  gap-0.5">
+                        <div className="sm:hidden flex items-center w-full mt-6 justify-between flex-row  gap-0.5">
                             <button onClick={() => setIsPause((prev) => !prev)} className="bg-green-400 flex text-center border-gray-800 cursor-pointer outline-none px-3 py-[9px] text-base text-zinc-100 rounded-md">
                                 {isPause ? <PlayIcon /> : <PauseIcon />}
                             </button>
