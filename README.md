@@ -33,11 +33,11 @@ The game ends when the grid is filled up and no more tetrominoes can fall.
 - The game has a pause button that allows you to pause and resume the game at any time.
 
 ## How to run
-To run this game locally, you need to have [Node.js] and [npm] installed on your machine. Then, follow these steps:
+#### To run this game locally, you need to have [Node.js] and [npm] installed on your machine. Then, follow these steps:
 
--- Clone this repository or download it as a zip file.
--- Navigate to the project folder and run `yarn` to install all the dependencies.
--- Run `yarn run dev` to start the development server and open the game in your browser.
--- Enjoy!
+- Clone this repository or download it as a zip file.
+- Navigate to the project folder and run `yarn` to install all the dependencies.
+- Run `yarn run dev` to start the development server and open the game in your browser.
+- Enjoy!
 
 ## [Live url](https://tetris-game-y6fn.onrender.com)
