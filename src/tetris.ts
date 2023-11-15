@@ -33,7 +33,7 @@ export default class Tetris {
     private setIsGame: Dispatch<SetStateAction<boolean>>;
     private setScore: Dispatch<SetStateAction<number>>;
     private setLevel: Dispatch<SetStateAction<number>>;
-    private timeout: number = 0;
+    private timeout?: NodeJS.Timeout;
 
     private clearPrevPice() {
         for (let i = 0; i < this.currentItem.piece.length; i++) {
