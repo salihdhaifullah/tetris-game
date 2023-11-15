@@ -7,7 +7,7 @@ export default defineConfig({
     plugins: [
         react(),
         VitePWA({
-            includeAssets: ['favicon.svg', 'favicon.ico', 'robots.txt', 'apple-touch-icon.png'],
+            includeAssets: ['assets/*.png', 'favicon.ico', 'robots.txt', 'apple-touch-icon.png', 'favicon-16x16.png' ,'favicon-32x32.png'],
             registerType: 'autoUpdate',
             devOptions: {
                 enabled: true,
@@ -16,10 +16,10 @@ export default defineConfig({
             manifest: {
                 name: 'Tetris Game',
                 short_name: 'Tetris',
-                theme_color: '#ffffff',
+                theme_color: '#212538',
                 start_url: '/',
                 display: 'standalone',
-                background_color: '#ffffff',
+                background_color: '#212538',
                 icons: [
                     {
                         src: 'android-chrome-192x192.png',
