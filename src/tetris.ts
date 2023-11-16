@@ -34,6 +34,7 @@ export default class Tetris {
     private setScore: Dispatch<SetStateAction<number>>;
     private setLevel: Dispatch<SetStateAction<number>>;
     private timeout?: NodeJS.Timeout;
+    private isStop: boolean = false;
 
     private clearPrevPice() {
         for (let i = 0; i < this.currentItem.piece.length; i++) {
@@ -89,7 +90,7 @@ export default class Tetris {
         return isEmpty;
     }
 
-    private takeDown(line: number) { 
+    private takeDown(line: number) {
         let newPostion = line;
 
         for (let i = newPostion + 1; i < 20; i++) {
@@ -112,7 +113,7 @@ export default class Tetris {
 
     private reArrangeLines() {
         for (let i = 19; i > -1; i--) {
-               if (!this.isEmpty(i)) this.takeDown(i);
+            if (!this.isEmpty(i)) this.takeDown(i);
         }
     }
 
@@ -238,7 +239,10 @@ export default class Tetris {
         return this.canGoTo(newX, newY, w, h, rotatedPiece);
     }
 
-    private stopGame() {
+    public endGame() {
+        this.isStop = true;
+        window.removeEventListener("keydown", this.boundCallback);
+        clearInterval(this.timeout);
         this.stopedPices.current = initMatrix();
         this.setLevel(1);
         this.setScore(0);
@@ -357,20 +361,22 @@ export default class Tetris {
 
     private boundCallback = this.callback.bind(this);
 
-    puase(isPuase: boolean) {
+    public puase(isPuase: boolean) {
         if (isPuase) {
             window.removeEventListener("keydown", this.boundCallback);
             clearInterval(this.timeout);
-        } else { 
+        } else {
             this.drawPiece()
         }
     }
 
     private drawPiece() {
         if (!this.canGoTo()) {
-            this.stopGame()
+            this.endGame()
             return;
         }
+
+        if (this.isStop) return;
 
         this.hilghtNewPosition();
         this.redrawPice();
